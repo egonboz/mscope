@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Arquitectura AWS Mscope",
+    "locale": "en",
+    "quality_profile": "standard",
+    "visual_preset": "classic",
+    "views": [
+      { "id": "request", "label": "Flujo 1 · Petición", "focus": ["external-apps", "alb", "ecs-a", "ecs-b"], "note": "Aplicaciones hacia el backend desplegado en dos Availability Zones." },
+      { "id": "processing", "label": "Flujo 2 · Procesamiento", "focus": ["ecs-a", "ecs-b", "sqs", "pipes", "step-functions", "batch-etl", "batch-ml"], "note": "Desacoplamiento mediante SQS y workflow orquestado." },
+      { "id": "persistence", "label": "Flujo 3 · Persistencia", "focus": ["rds", "s3", "vector-db", "batch-etl", "batch-ml"], "note": "Persistencia de estado, artefactos, resultados y recuperación semántica." },
+      { "id": "observability", "label": "Observabilidad transversal", "focus": ["alb", "ecs-a", "ecs-b", "step-functions", "batch-etl", "batch-ml", "cloudwatch"], "note": "Logs, métricas, estados y ejecuciones." }
+    ]
+  },
+  "components": [
+    { "id": "external-apps", "type": "external", "label": "Aplicaciones", "sublabel": "- Externas\n- Internas", "pos": [40, 480], "size": [180, 110] },
+    { "id": "alb", "type": "cloud", "label": "Application Load Balancer", "sublabel": "(ALB)", "pos": [330, 480], "size": [230, 86] },
+    { "id": "ecs-a", "type": "backend", "label": "ECS / Fargate", "sublabel": "Spring Boot\nMonolito modular", "pos": [620, 300], "size": [250, 120] },
+    { "id": "ecs-b", "type": "backend", "label": "ECS / Fargate", "sublabel": "Spring Boot\nMonolito modular", "pos": [620, 650], "size": [250, 120] },
+    { "id": "rds", "type": "database", "label": "Amazon RDS for PostgreSQL", "sublabel": "Estado + metadatos", "pos": [980, 150], "size": [260, 100] },
+    { "id": "s3", "type": "cloud", "label": "Amazon S3", "sublabel": "Datasets + Artefactos + Resultados", "pos": [980, 470], "size": [260, 100] },
+    { "id": "vector-db", "type": "database", "label": "Vector Database", "sublabel": "Recuperación Semántica", "pos": [980, 790], "size": [260, 100] },
+    { "id": "sqs", "type": "messagebus", "label": "Amazon SQS", "sublabel": "(Simple Queue Service)\nCola de trabajos", "pos": [1350, 470], "size": [230, 110] },
+    { "id": "pipes", "type": "cloud", "label": "Eventbridge Pipes", "pos": [1660, 490], "size": [190, 70] },
+    { "id": "step-functions", "type": "cloud", "label": "AWS Step Functions", "sublabel": "Orquestación del workflow", "pos": [1930, 470], "size": [240, 100] },
+    { "id": "batch-etl", "type": "backend", "label": "AWS Batch", "sublabel": "ETL\nPySpark / Python", "pos": [2280, 300], "size": [220, 120] },
+    { "id": "batch-ml", "type": "backend", "label": "AWS Batch", "sublabel": "ML / Scoring\nPython", "pos": [2280, 650], "size": [220, 120] },
+    { "id": "cloudwatch", "type": "cloud", "label": "Observabilidad transversal", "sublabel": "Amazon CloudWatch: logs, métricas, alarmas", "pos": [1400, 1100], "size": [420, 100] }
+  ],
+  "boundaries": [
+    { "kind": "security-group", "label": "FUERA DE AWS", "wraps": ["external-apps"], "pad": 28 },
+    { "kind": "region", "label": "AWS Cloud", "wraps": ["alb", "ecs-a", "ecs-b", "rds", "s3", "vector-db", "sqs", "pipes", "step-functions", "batch-etl", "batch-ml", "cloudwatch"], "pad": 42 },
+    { "kind": "security-group", "label": "CAPA DE APLICACIÓN", "wraps": ["alb", "ecs-a", "ecs-b"], "pad": 30 },
+    { "kind": "security-group", "label": "Availability Zone A", "wraps": ["ecs-a"], "pad": 22 },
+    { "kind": "security-group", "label": "Availability Zone B", "wraps": ["ecs-b"], "pad": 22 },
+    { "kind": "security-group", "label": "CAPA DE DATOS", "wraps": ["rds", "s3", "vector-db"], "pad": 30 },
+    { "kind": "security-group", "label": "CAPA DE PROCESAMIENTO", "wraps": ["sqs", "pipes", "step-functions", "batch-etl", "batch-ml"], "pad": 30 }
+  ],
+  "connections": [
+    { "id": "apps-to-alb", "from": "external-apps", "to": "alb", "label": "HTTPS" },
+    { "id": "alb-to-ecs-a", "from": "alb", "to": "ecs-a" },
+    { "id": "alb-to-ecs-b", "from": "alb", "to": "ecs-b", "label": "HTTP / HTTPS", "variant": "dashed" },
+    { "id": "ecs-a-to-rds", "from": "ecs-a", "to": "rds", "label": "Lectura / Escritura" },
+    { "id": "ecs-a-to-s3", "from": "ecs-a", "to": "s3", "label": "Artefactos / Ficheros" },
+    { "id": "ecs-a-to-sqs", "from": "ecs-a", "to": "sqs", "label": "Solicitud de Procesamiento" },
+    { "id": "ecs-b-to-rds", "from": "ecs-b", "to": "rds", "label": "Lectura / Escritura" },
+    { "id": "ecs-b-to-s3", "from": "ecs-b", "to": "s3", "label": "Artefactos / Ficheros" },
+    { "id": "ecs-b-to-sqs", "from": "ecs-b", "to": "sqs", "label": "Solicitud de Procesamiento" },
+    { "id": "sqs-to-pipes", "from": "sqs", "to": "pipes", "label": "Mecanismo de disparo", "labelAt": [1620, 594] },
+    { "id": "pipes-to-step", "from": "pipes", "to": "step-functions", "label": "Inicia ejecución", "labelAt": [1890, 584] },
+    { "id": "step-to-etl", "from": "step-functions", "to": "batch-etl", "label": "Ejecuta ETL" },
+    { "id": "step-to-ml", "from": "step-functions", "to": "batch-ml", "label": "Ejecuta ML" },
+    { "id": "etl-to-s3", "from": "batch-etl", "to": "s3", "label": "Datos procesados / Artefactos" },
+    { "id": "etl-to-rds", "from": "batch-etl", "to": "rds", "label": "Metadatos / Estado" },
+    { "id": "ml-to-s3", "from": "batch-ml", "to": "s3", "label": "Modelos / Resultados" },
+    { "id": "ml-to-rds", "from": "batch-ml", "to": "rds", "label": "Metadatos / Estados" },
+    { "id": "ml-to-vector", "from": "batch-ml", "to": "vector-db", "label": "Consulta semántica" },
+    { "id": "alb-to-cloudwatch", "from": "alb", "to": "cloudwatch", "label": "Logs / Métricas", "variant": "dashed" },
+    { "id": "ecs-a-to-cloudwatch", "from": "ecs-a", "to": "cloudwatch", "label": "Logs / Métricas", "variant": "dashed", "fromSide": "right", "toSide": "left", "via": [[930, 360], [930, 1000], [1300, 1000], [1300, 1150]], "labelSegment": 0, "labelDx": 100 },
+    { "id": "ecs-b-to-cloudwatch", "from": "ecs-b", "to": "cloudwatch", "label": "Logs / Métricas", "variant": "dashed", "fromSide": "right", "toSide": "left", "via": [[930, 710], [930, 1000], [1300, 1000], [1300, 1150]], "labelSegment": 0, "labelDx": 100 },
+    { "id": "step-to-cloudwatch", "from": "step-functions", "to": "cloudwatch", "label": "Estado / Ejecuciones", "variant": "dashed", "via": [[1875, 520], [1875, 1150]] },
+    { "id": "etl-to-cloudwatch", "from": "batch-etl", "to": "cloudwatch", "label": "Logs / Métricas", "variant": "dashed", "fromSide": "right", "toSide": "left", "via": [[2600, 360], [2600, 1000], [1300, 1000], [1300, 1150]], "labelSegment": 0 },
+    { "id": "ml-to-cloudwatch", "from": "batch-ml", "to": "cloudwatch", "label": "Logs / Métricas", "variant": "dashed", "fromSide": "right", "toSide": "left", "via": [[2600, 710], [2600, 1000], [1300, 1000], [1300, 1150]], "labelSegment": 0 }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Decisión de implementación propuesta",
+      "items": [
+        "El procesamiento ETL / ML se desacopla de la petición síncrona mediante una cola y un workflow orquestado.",
+        "La ejecución concreta y el grado de asincronía deben validarse con duración, frecuencia y consumo real."
+      ]
+    }
+  ]
+}
