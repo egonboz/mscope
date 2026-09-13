@@ -4,8 +4,8 @@ Interactive diagrams generated with Archify.
 
 ## Views
 
-- [AWS architecture](./): components, layers, data flow and observability.
-- [CI/CD workflow](./cicd.html): quality gates, validation, delivery and rollback.
+- [AWS architecture](https://egonboz.github.io/mscope/): components, layers, data flow and observability.
+- [CI/CD workflow](https://egonboz.github.io/mscope/cicd.html): quality gates, validation, delivery and rollback.
 
 ## Files
 
