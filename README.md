@@ -1,11 +1,18 @@
-# Mscope Architecture
+# Mscope Diagrams
 
-Interactive AWS architecture diagram generated with Archify.
+Interactive diagrams generated with Archify.
+
+## Views
+
+- [AWS architecture](./): components, layers, data flow and observability.
+- [CI/CD workflow](./cicd.html): quality gates, validation, delivery and rollback.
 
 ## Files
 
-- `index.html`: GitHub Pages entry point.
-- `mscope.architecture.json`: Archify source specification.
+- `index.html`: AWS architecture view and GitHub Pages entry point.
+- `mscope.architecture.json`: AWS architecture source specification.
+- `cicd.html`: CI/CD workflow view.
+- `cicd.workflow.json`: CI/CD workflow source specification.
 
 ## Local preview
 
