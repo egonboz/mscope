@@ -6,6 +6,7 @@ Interactive diagrams generated with Archify.
 
 - [AWS architecture](https://egonboz.github.io/mscope/): components, layers, data flow and observability.
 - [CI/CD workflow](https://egonboz.github.io/mscope/cicd.html): quality gates, validation, delivery and rollback.
+- [Implementation roadmap](https://egonboz.github.io/mscope/roadmap_mscope.html): progressive implementation based on validation, measurement and evidence.
 
 ## Files
 
@@ -13,6 +14,7 @@ Interactive diagrams generated with Archify.
 - `mscope.architecture.json`: AWS architecture source specification.
 - `cicd.html`: CI/CD workflow view.
 - `cicd.workflow.json`: CI/CD workflow source specification.
+- `roadmap_mscope.html`: standalone implementation roadmap.
 
 ## Local preview
 
